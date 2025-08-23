@@ -11,13 +11,13 @@ def gen_cot():
     """Generate CoT Event."""
     root = ET.Element("event")
     root.set("version", "2.0")
-    root.set("type", "a-s-G")  # insert your type of marker
-    root.set("uid", "temp6th")
+    root.set("type", "b-x-cv")  # insert your type of marker
+    root.set("uid", "AutoCV1")
     root.set("how", "m-g")
     root.set("time", pytak.cot_time())
     root.set("start", pytak.cot_time())
     root.set(
-        "stale", pytak.cot_time(60)
+        "stale", pytak.cot_time(20)
     )  # time difference in seconds from 'start' when stale initiates
 
     pt_attr = {
