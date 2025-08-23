@@ -11,7 +11,7 @@ def gen_cot():
     """Generate CoT Event."""
     root = ET.Element("event")
     root.set("version", "2.0")
-    root.set("type", "a-h-A-M-A")  # insert your type of marker
+    root.set("type", "a-s-G")  # insert your type of marker
     root.set("uid", "temp6th")
     root.set("how", "m-g")
     root.set("time", pytak.cot_time())
@@ -31,6 +31,7 @@ def gen_cot():
     ET.SubElement(root, "point", attrib=pt_attr)
 
     return ET.tostring(root)
+    # return ET.tostring(root, encoding="utf8")
 
 
 class MySender(pytak.QueueWorker):
@@ -77,7 +78,7 @@ async def main():
     adds your serializer to the asyncio task list.
     """
     config = ConfigParser()
-    config["mycottool"] = {"COT_URL": "udp://239.2.3.1:6969"}
+    config["mycottool"] = {"COT_URL": "udp+wo://239.2.3.1:6969"}
     config = config["mycottool"]
 
     # Initializes worker queues and tasks.
