@@ -11,7 +11,7 @@ def gen_cot():
     root = ET.Element("event")
     root.set("version", "2.0")
     root.set("type", "a-h-A-M-A")  # insert your type of marker
-    root.set("uid", "team4marker")
+    root.set("uid", "kyussmarker")
     root.set("how", "m-g")
     root.set("time", pytak.cot_time())
     root.set("start", pytak.cot_time())
@@ -57,7 +57,11 @@ class MyReceiver(pytak.QueueWorker):
 
     async def handle_data(self, data):
         """Handle data from the receive queue."""
-        self._logger.info("Received:\n%s\n", data.decode())
+        try:
+            self._logger.info("Received:\n%s\n", data.decode())
+        except (UnicodeDecodeError, AttributeError):
+            # Cannot decode Protobuf
+            pass
 
     async def run(self):
         """Read from the receive queue, put data onto handler."""
@@ -74,7 +78,7 @@ async def main():
     """
     print("Running main")
     config = ConfigParser()
-    config["mycottool"] = {"COT_URL": "udp://239.2.3.1:6969:6969"}
+    config["mycottool"] = {"COT_URL": "udp://239.2.3.1:6969"}
     config = config["mycottool"]
 
     # Initializes worker queues and tasks.
