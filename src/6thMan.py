@@ -5,7 +5,7 @@ import mimetypes
 import requests
 from datetime import datetime
 
-allowedMimeTypes = [
+supportedMimeTypes = [
     'image/png', 'image/jpeg', 'image/jpg', 'image/gif'
 ]
 
@@ -14,8 +14,8 @@ def getMimeType(fileName):
     return mimetypes.guess_type(fileName)[0]
 
 
-def isAllowedMimeType(mimeType):
-    return mimeType in allowedMimeTypes
+def isSupportedMimeType(mimeType):
+    return mimeType in supportedMimeTypes
 
 
 def extractWithAiOcr(buffer, originalMimeType):
@@ -24,7 +24,7 @@ def extractWithAiOcr(buffer, originalMimeType):
     workingBuffer = buffer
     mimeType = originalMimeType
 
-    print(f"🖼️ Detected non-PDF file (sig: {fileSignature})")
+    print(f"🖼️ Detected file (sig: {fileSignature})")
     mimeType = originalMimeType or 'image/png'
 
     base64Image = base64.b64encode(workingBuffer).decode('utf-8')
@@ -131,17 +131,14 @@ def extractWithAiOcr(buffer, originalMimeType):
     return content
 
 
-def handleOcrUpload(fileBuffer, fileName):
+def handleImageRecognitionUpload(fileBuffer, fileName):
     mimeType = getMimeType(fileName)
     print(f"MIME Type: {mimeType}")
 
-    if not isAllowedMimeType(mimeType):
+    if not isSupportedMimeType(mimeType):
         raise ValueError(f"Unsupported file type: {mimeType}")
 
-    imageBuffer = fileBuffer
-    usedMimeType = mimeType
-
-    return extractWithAiOcr(imageBuffer, usedMimeType)
+    return extractWithAiOcr(fileBuffer, mimeType)
 
 
 def main():
@@ -160,7 +157,7 @@ def main():
             continue
 
         mime_type = getMimeType(file_name)
-        if not isAllowedMimeType(mime_type):
+        if not isSupportedMimeType(mime_type):
             print(f"⛔ Skipping unsupported file: {file_name} (MIME: {mime_type})")
             continue
 
@@ -169,7 +166,7 @@ def main():
                 file_buffer = f.read()
 
             print(f"\n📨 Sending {file_name} to The 6th Man for Analysis...")
-            result = handleOcrUpload(file_buffer, file_name)
+            result = handleImageRecognitionUpload(file_buffer, file_name)
             print(f"Situational analysis for {file_name}:\n{result}\n")
 
         except Exception as e:
