@@ -6,7 +6,6 @@ import pytak
 
 from configparser import ConfigParser
 
-
 def gen_cot():
     """Generate CoT Event."""
     root = ET.Element("event")
@@ -33,7 +32,6 @@ def gen_cot():
     return ET.tostring(root)
     # return ET.tostring(root, encoding="utf8")
 
-
 class MySender(pytak.QueueWorker):
     """
     Defines how you process or generate your Cursor-On-Target Events.
@@ -47,12 +45,11 @@ class MySender(pytak.QueueWorker):
 
     async def run(self, number_of_iterations=-1):
         """Run the loop for processing or generating pre-CoT data."""
-        while 1:
+        while 1: # comment out after testing
             data = gen_cot()
             self._logger.info("Sending:\n%s\n", data.decode())
             await self.handle_data(data)
             await asyncio.sleep(5)
-
 
 class MyReceiver(pytak.QueueWorker):
     """Defines how you will handle events from RX Queue."""
@@ -71,7 +68,6 @@ class MyReceiver(pytak.QueueWorker):
                 await self.queue.get()
             )  # this is how we get the received CoT from rx_queue
             await self.handle_data(data)
-
 
 async def main():
     """Main definition of your program, sets config params and
@@ -92,7 +88,6 @@ async def main():
 
     # Start all tasks.
     await clitool.run()
-
 
 if __name__ == "__main__":
     asyncio.run(main())

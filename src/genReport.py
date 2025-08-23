@@ -80,7 +80,7 @@ def extractWithAiOcr(buffer, originalMimeType):
                           "peopleCount": <integer>,
                           "hostiles": true/false,
                           "weaponsDetected": true/false,
-                          "Hazards": true/false,
+                          "hazards": true/false,
                           "rubble": true/false
                         }
 
@@ -88,7 +88,7 @@ def extractWithAiOcr(buffer, originalMimeType):
                         - peopleCount: Number of distinct HUMAN people visible (ignore mannequins, posters, photos, statues).
                         - weaponsDetected: true if any weapons (guns, knives, explosives, etc.) are visible; false otherwise.
                         - hostiles: assume true if weapons present; false otherwise
-                        - Hazards: true if hazards like fire, smoke, chemical spill, collapsed structures, or flood are visible.
+                        - hazards: true if hazards like fire, smoke, chemical spill, collapsed structures, or flood are visible.
                         - rubble: true if debris/rubble from destruction (collapsed walls, broken concrete, wreckage) is visible.
 
                         Rules:
