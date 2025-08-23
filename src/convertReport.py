@@ -7,7 +7,7 @@ def convRepToXml(reportObj):
     LE = '10'
     LIFESPAN = 10 /60/24 # 10 minutes !To discuss!
     uid = reportObj.uid
-    sym = reportObj.symbol
+    sym = 'a-s-G'
     ToR = reportObj.realTime
     point = reportObj.geometry
     x,y,z = point.x, point.y, point.z
@@ -59,4 +59,5 @@ def convRepToCsv(reportObj, filePath):
     ]
     fileObj.write('\t'.join(values)+'\n')
     fileObj.close()
+
     return
