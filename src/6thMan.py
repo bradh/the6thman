@@ -145,7 +145,8 @@ def handleOcrUpload(fileBuffer, fileName):
 
 
 def main():
-    images_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../files/images'))
+    images_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../images'))
+
 
     if not os.path.exists(images_dir):
         print(f"⚠️  Directory not found: {images_dir}")
