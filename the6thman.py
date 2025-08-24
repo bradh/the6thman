@@ -182,6 +182,16 @@ class ImageWorker():
     def __init__(self, cot_queue):
         self.output_queue = cot_queue
 
+    def simulate_positions(start_lat=-27.4698, start_lon=153.0251, n=100, step_deg=0.00018):
+        """
+        Simulates a rough urban foot patrol path. Step is ~20m-ish at Brisbane lat (hand-wavy).
+        """
+        lat, lon = start_lat, start_lon
+        for i in range(n):
+            # weave a little to look less robotic
+            lat += step_deg * (1.0 if i % 3 != 0 else 0.6)
+            lon += step_deg * (0.6 if i % 4 != 0 else 1.0)
+            yield (round(lat, 6), round(lon, 6))
 
     async def generate_cot(self, cvEvent, features: str): # features is a JSON str
         """Return COT marker based on given features """
@@ -241,7 +251,10 @@ class ImageWorker():
 
         print(f"📂 Scanning directory: {images_dir}")
 
-        for file_name in os.listdir(images_dir):
+        files = [f for f in os.listdir(images_dir) if os.path.isfile(os.path.join(images_dir, f))]
+        path_iter = simulate_positions(n=max(1, len(files)))
+
+        for file_name in files:
             file_path = os.path.join(images_dir, file_name)
 
             if not os.path.isfile(file_path):
@@ -259,10 +272,10 @@ class ImageWorker():
                 print(f"\n📨 Sending {file_name} to The 6th Man for Analysis...")
                 result = self._handleImageRecognitionUpload(file_buffer, file_name)
                 print(f"Situational analysis for {file_name}:\n{result}\n")
-                # TODO: pull this from somewhere
+                lat, lon = next(path_iter)
                 cvEvent = {
-                    "lat": -29.0,
-                    "lon": 153.0,
+                    "lat": lat,
+                    "lon": lon,
                     "hae": 26.0,
                     "ce": 999.99,
                     "le": 999999.99,
