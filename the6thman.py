@@ -2,6 +2,7 @@
 
 import asyncio
 import base64
+import ipaddress
 import logging
 import mimetypes
 import json
@@ -13,7 +14,7 @@ from typing import Union
 import xml.etree.ElementTree as ET
 
 import pytak
-# import takproto
+import takproto
 
 import multiprocessing as mp
 
@@ -26,6 +27,63 @@ supportedMimeTypes = [
     'image/png', 'image/jpeg', 'image/jpg', 'image/gif'
 ]
 
+class MyTXWorker(pytak.Worker):
+    """Works data queue and hands off to Protocol Workers.
+
+    You should create an TXWorker Instance using the `pytak.txworker_factory()`
+    Function.
+
+    Data is put onto the Queue using a `pytak.QueueWorker()` instance.
+    """
+
+    def __init__(
+        self,
+        queue: Union[asyncio.Queue, mp.Queue],
+        config: Union[None, SectionProxy, dict],
+        writer: asyncio.Protocol,
+    ) -> None:
+        """Initialize a TXWorker instance."""
+        super().__init__(queue, config)
+        self.writer: asyncio.Protocol = writer
+
+    async def handle_data(self, data: bytes) -> None:
+        """Accept CoT event from CoT event queue and process for writing."""
+        self._logger.debug("TX (%s): %s", self.config.get('name'), data)
+        await self.send_data(data)
+
+    async def send_data(self, data: bytes) -> None:
+        """Send Data using the appropriate Protocol method."""
+        if self.use_protobuf:
+            host, _ = pytak.parse_url(self.config.get("COT_URL", pytak.DEFAULT_COT_URL))
+            is_multicast: bool = False
+
+            try:
+                is_multicast = ipaddress.ip_address(host).is_multicast
+            except ValueError:
+                # It's probably not an ip address...
+                pass
+
+            if is_multicast:
+                proto = takproto.TAKProtoVer.MESH
+            else:
+                proto = takproto.TAKProtoVer.STREAM
+
+            try:
+                data = takproto.xml2proto(data, proto)
+            except ET.ParseError as exc:
+                self._logger.warning(exc)
+                self._logger.warning("Could not convert XML to Proto.")
+
+        if hasattr(self.writer, "send"):
+            await self.writer.send(data)
+        else:
+            if hasattr(self.writer, "write"):
+                self.writer.write(data)
+            if hasattr(self.writer, "drain"):
+                await self.writer.drain()
+            if hasattr(self.writer, "flush"):
+                # FIXME: This should be an asyncio.Future?:
+                self.writer.flush()
 
 def getMimeType(fileName):
     return mimetypes.guess_type(fileName)[0]
@@ -233,7 +291,7 @@ class SituationalUnderstander(pytak.CLITool):
     async def setup(self) -> None:
         reader, writer = await pytak.protocol_factory(self.config)
 
-        write_worker = pytak.TXWorker(self.tx_queue, self.config, writer)
+        write_worker = MyTXWorker(self.tx_queue, self.config, writer)
         self.add_task(write_worker)
 
         read_worker = pytak.RXWorker(self.rx_queue, self.config, reader)
