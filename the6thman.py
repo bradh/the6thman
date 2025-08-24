@@ -201,6 +201,15 @@ class ImageWorker():
                 print(f"\n📨 Sending {file_name} to The 6th Man for Analysis...")
                 result = self._handleImageRecognitionUpload(file_buffer, file_name)
                 print(f"Situational analysis for {file_name}:\n{result}\n")
+                # TODO: pull this from somewhere
+                cvEvent = {
+                    "lat": -29.0,
+                    "lon": 153.0,
+                    "hae": 26.0,
+                    "ce": 999.99,
+                    "le": 999999.99,
+                }
+                self.generate_cot(cvEvent, result)
 
             except Exception as e:
                 print(f"💥 Failed to process {file_name}: {str(e)}")
